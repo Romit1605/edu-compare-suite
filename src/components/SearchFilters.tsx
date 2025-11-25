@@ -37,7 +37,7 @@ export const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) 
   const clearFilters = () => {
     onFiltersChange({
       platforms: [],
-      category: "",
+      category: "all",
       price: "all",
       rating: "all",
     });
@@ -83,7 +83,7 @@ export const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) 
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}

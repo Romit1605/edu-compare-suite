@@ -41,7 +41,7 @@ const SearchResults = () => {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     platforms: [] as string[],
-    category: "",
+    category: "all",
     price: "all",
     rating: "all",
   });
@@ -126,7 +126,7 @@ const SearchResults = () => {
     if (filters.platforms.length > 0 && !filters.platforms.includes(course.platform)) {
       return false;
     }
-    if (filters.category && course.category !== filters.category) {
+    if (filters.category && filters.category !== "all" && course.category !== filters.category) {
       return false;
     }
     if (filters.price === "free" && course.price !== "FREE") {
