@@ -25,6 +25,30 @@ public class SearchService {
         );
 
         courses.add(c1);
+        // Add a sample Java course so searches for "java" return results during development
+        Course c2 = new Course(
+            "Java Programming: From Beginner to Professional",
+            "https://www.udemy.com/course/java-programming-beginner-to-advanced/",
+            "Udemy",
+            "Beginner",
+            "Course",
+            "programming",
+            "https://udemy-images.udemy.com/course/200_H/1234567890_abcdef.jpg",
+            "01/15/2024 9:00:00 AM"
+        );
+        courses.add(c2);
+        // Add one more sample course to broaden demo data
+        Course c3 = new Course(
+            "Full-Stack Web Development with React and Node",
+            "https://www.coursera.org/learn/full-stack-react-node",
+            "Coursera",
+            "Intermediate",
+            "Course",
+            "web-development",
+            "https://example.com/images/fullstack.jpg",
+            "06/20/2024 10:00:00 AM"
+        );
+        courses.add(c3);
         buildIndex();
     }
 
@@ -59,5 +83,10 @@ public class SearchService {
         }
 
         return results;
+    }
+
+    // Return all courses (used by reporting endpoints)
+    public List<Course> searchAll() {
+        return new ArrayList<>(courses);
     }
 }

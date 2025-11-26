@@ -5,12 +5,13 @@ import jakarta.validation.constraints.Pattern;
 
 public class SearchRequest {
 
-    @NotBlank(message = "word is required")
-    @Pattern(
-            regexp = "^[A-Za-z]{1,}$",
-            message = "word must contain only letters"
-    )
-    private String search;
+        @NotBlank(message = "search is required")
+        @Pattern(
+            // allow letters, numbers, spaces, dashes and basic punctuation
+            regexp = "^[A-Za-z0-9\\\\s\\\\-_,.]{1,}$",
+            message = "search must contain valid characters"
+        )
+        private String search;
 
     public String getSearch() { return search; }
     public void setSearch(String search) { this.search = search; }

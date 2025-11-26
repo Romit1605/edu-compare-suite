@@ -5,12 +5,13 @@ import jakarta.validation.constraints.Pattern;
 
 public class AutoCompleteRequest {
 
-    @NotBlank(message = "word is required")
-    @Pattern(
-            regexp = "^[A-Za-z]{1,}$",
-            message = "word must contain only letters and be at least 1 character long"
-    )
-    private String word;
+        @NotBlank(message = "word is required")
+        @Pattern(
+            // allow letters, numbers and spaces for autocomplete queries
+            regexp = "^[A-Za-z0-9\\s\\-_,.]{1,}$",
+            message = "word must contain valid characters"
+        )
+        private String word;
     public String getWord() {
         return word;
     }
