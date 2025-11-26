@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/config";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Code } from "lucide-react";
@@ -43,7 +44,7 @@ const DataValidation = () => {
   const fetchValidationStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/validation/stats");
+      const response = await fetch(`${API_BASE_URL}/validation/stats`);
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats || {});

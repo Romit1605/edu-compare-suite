@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "@/config";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ const PatternFinder = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/courses/patterns?type=${patternType}`
+        `${API_BASE_URL}/courses/patterns?type=${patternType}`
       );
       if (response.ok) {
         const data = await response.json();

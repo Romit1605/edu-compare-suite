@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "@/config";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,7 @@ const WordAnalyzer = () => {
     if (query.length > 2) {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/courses/search?keyword=${encodeURIComponent(query)}`
+          `${API_BASE_URL}/courses/search?keyword=${encodeURIComponent(query)}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -55,7 +56,7 @@ const WordAnalyzer = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/courses/${selectedCourse.id}/frequency?word=${encodeURIComponent(
+        `${API_BASE_URL}/courses/${selectedCourse.id}/frequency?word=${encodeURIComponent(
           word
         )}`
       );

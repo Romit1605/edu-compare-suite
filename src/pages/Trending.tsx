@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/config";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ const Trending = () => {
   const fetchTrendingSearches = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/courses/search-frequency");
+      const response = await fetch(`${API_BASE_URL}/courses/search-frequency`);
       if (response.ok) {
         const data = await response.json();
         setTrendingSearches(data.trendingSearches || []);

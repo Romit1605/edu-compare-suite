@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "@/config";
 import { useNavigate } from "react-router-dom";
 import { Search, TrendingUp, Users, BookOpen, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ const Index = () => {
       // Simulate autocomplete API call
       try {
         const response = await fetch(
-          `http://localhost:8080/api/courses/autocomplete?prefix=${encodeURIComponent(value)}`
+          `${API_BASE_URL}/courses/autocomplete?prefix=${encodeURIComponent(value)}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -57,6 +58,7 @@ const Index = () => {
           setShowAutocomplete(true);
         }
       } catch (error) {
+        console.error("Autocomplete API error:", error);
         // Fallback mock data
         setAutocompleteResults([
           `${value} basics`,
