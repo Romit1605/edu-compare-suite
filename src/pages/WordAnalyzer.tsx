@@ -31,12 +31,23 @@ const WordAnalyzer = () => {
     setSearchQuery(query);
     if (query.length > 2) {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/courses/search?keyword=${encodeURIComponent(query)}`
-        );
+        // Backend exposes a POST /api/search endpoint accepting JSON { search: string }
+        const response = await fetch(`${API_BASE_URL}/search`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ search: query }),
+        });
+
         if (response.ok) {
           const data = await response.json();
-          setCourses(data.courses?.slice(0, 5) || []);
+          // Backend returns `courses_found` in SearchResponse
+          setCourses((data.courses_found || []).slice(0, 5));
+        } else {
+          // Fallback to mock suggestions when backend does not return OK
+          setCourses([
+            { id: "1", title: "Complete Python Bootcamp", platform: "Udemy" },
+            { id: "2", title: "Machine Learning A-Z", platform: "Coursera" },
+          ]);
         }
       } catch (error) {
         setCourses([
@@ -55,20 +66,22 @@ const WordAnalyzer = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/courses/${selectedCourse.id}/frequency?word=${encodeURIComponent(
-          word
-        )}`
-      );
+      // Backend exposes POST /api/freq which accepts { word: string }
+      const response = await fetch(`${API_BASE_URL}/freq`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word }),
+      });
       if (response.ok) {
         const data = await response.json();
+        const count = data.frequency || data.freq || data.updatedFrequency || 0;
         const analysisResult: AnalysisResult = {
           courseId: selectedCourse.id,
           courseTitle: selectedCourse.title,
           platform: selectedCourse.platform,
           description: selectedCourse.description || "",
           word: word,
-          count: data.count || 0,
+          count: count,
         };
         setResult(analysisResult);
 

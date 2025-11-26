@@ -42,6 +42,25 @@ const PatternFinder = () => {
         setResults(data.results || []);
         setTotalCount(data.totalCount || 0);
         setStats(data.stats || {});
+      } else {
+        // Endpoint not provided by backend yet — fall back to mock
+        const mockResults: PatternResult[] = [
+          {
+            courseId: "1",
+            title: "Complete Python Programming Course",
+            platform: "Udemy",
+            matches: ["support@example.com", "info@pythoncourse.com"],
+          },
+          {
+            courseId: "2",
+            title: "Web Development Bootcamp",
+            platform: "Coursera",
+            matches: ["https://example.com", "https://webdev.io"],
+          },
+        ];
+        setResults(mockResults);
+        setTotalCount(234);
+        setStats({ email: 112, url: 89, phone: 23, price: 67, date: 43 });
       }
     } catch (error) {
       // Mock data

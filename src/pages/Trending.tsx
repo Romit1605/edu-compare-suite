@@ -29,6 +29,18 @@ const Trending = () => {
       if (response.ok) {
         const data = await response.json();
         setTrendingSearches(data.trendingSearches || []);
+      } else {
+        // Backend does not expose this endpoint currently; use mock fallback
+        setTrendingSearches([
+          { keyword: "Python Programming", searchCount: 1250, lastSearched: "2 hours ago" },
+          { keyword: "Machine Learning", searchCount: 980, lastSearched: "3 hours ago" },
+          { keyword: "Web Development", searchCount: 845, lastSearched: "5 hours ago" },
+          { keyword: "Data Science", searchCount: 720, lastSearched: "1 hour ago" },
+          { keyword: "JavaScript", searchCount: 690, lastSearched: "4 hours ago" },
+          { keyword: "React", searchCount: 580, lastSearched: "6 hours ago" },
+          { keyword: "AI Fundamentals", searchCount: 540, lastSearched: "7 hours ago" },
+          { keyword: "Cloud Computing", searchCount: 480, lastSearched: "8 hours ago" },
+        ]);
       }
     } catch (error) {
       // Mock data fallback

@@ -49,12 +49,15 @@ const Index = () => {
     if (value.length > 2) {
       // Simulate autocomplete API call
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/courses/autocomplete?prefix=${encodeURIComponent(value)}`
-        );
+        const response = await fetch(`${API_BASE_URL}/autocomplete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ word: value }),
+        });
+
         if (response.ok) {
           const data = await response.json();
-          setAutocompleteResults(data.suggestions || []);
+          setAutocompleteResults(data.completions || []);
           setShowAutocomplete(true);
         }
       } catch (error) {

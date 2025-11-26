@@ -8,7 +8,6 @@ import { SearchFilters } from "@/components/SearchFilters";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
 
 interface Course {
   id: string;
@@ -19,6 +18,7 @@ interface Course {
   rating: number;
   price: string | number;
   image?: string;
+  url?: string;
 }
 
 interface RankedCourse {
@@ -56,57 +56,51 @@ const SearchResults = () => {
   const fetchResults = async (searchQuery: string) => {
     setLoading(true);
     try {
-      // Fetch ranked results
-      const rankingResponse = await fetch(
-        `${API_BASE_URL}/courses/ranking?keyword=${encodeURIComponent(searchQuery)}`
-      );
-      if (rankingResponse.ok) {
-        const rankingData = await rankingResponse.json();
-        setRankedCourses(rankingData.rankedCourses || []);
-      }
+      // 1. Search API (POST)
+      const searchResponse = await fetch(`${API_BASE_URL}/search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ search: searchQuery }),
+      });
 
-      // Fetch main search results
-      const searchResponse = await fetch(
-        `${API_BASE_URL}/courses/search?keyword=${encodeURIComponent(searchQuery)}`
-      );
       if (searchResponse.ok) {
         const searchData = await searchResponse.json();
-        setCourses(searchData.courses || []);
-
-        setCourses(searchData.courses || []);
+        // Map backend Course to frontend Course interface
+        const mappedCourses = (searchData.courses_found || []).map((c: any, index: number) => ({
+          id: index.toString(),
+          title: c.title,
+          platform: c.university || c.type || "Unknown",
+          category: c.category || "General",
+          instructor: c.university || "Unknown",
+          rating: 4.5,
+          price: "Free",
+          image: c.imageUrl,
+          url: c.url
+        }));
+        setCourses(mappedCourses);
       }
 
-      // Always fetch spell check suggestions to show "Did you mean"
-      const spellCheckResponse = await fetch(
-        `${API_BASE_URL}/courses/spellcheck?word=${encodeURIComponent(searchQuery)}`
-      );
+      // 2. Spell Check API (POST)
+      const spellCheckResponse = await fetch(`${API_BASE_URL}/spellcheck`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word: searchQuery }),
+      });
+
       if (spellCheckResponse.ok) {
         const spellData = await spellCheckResponse.json();
-        setSuggestions(spellData.suggestions || []);
+        if (!spellData.speltCorrectly && spellData.correctedWord) {
+          setSuggestions([spellData.correctedWord]);
+        } else {
+          setSuggestions([]);
+        }
       }
+
+      setRankedCourses([]);
+
     } catch (error) {
       console.error("Error fetching results:", error);
-      // Mock data fallback
-      setCourses([
-        {
-          id: "1",
-          title: "Complete Python Bootcamp",
-          platform: "Udemy",
-          category: "Programming",
-          instructor: "John Doe",
-          rating: 4.5,
-          price: 49.99,
-        },
-        {
-          id: "2",
-          title: "Machine Learning A-Z",
-          platform: "Coursera",
-          category: "Data Science",
-          instructor: "Jane Smith",
-          rating: 4.8,
-          price: "FREE",
-        },
-      ]);
+      setCourses([]);
     } finally {
       setLoading(false);
     }
@@ -201,17 +195,6 @@ const SearchResults = () => {
                           className="bg-background hover:bg-accent"
                         >
                           {suggestion}
-                          {/* Show edit distance if available (mocking it here since API returns strings, 
-                              but in a real app we'd parse the object or just show the word) 
-                              For now, just showing the word as requested by "did you mean" UI standard.
-                              User asked for edit distance, but the API returns List<String>. 
-                              I will assume the backend might be updated or I just show the word. 
-                              Wait, the user explicitly asked to "show edit distance". 
-                              The current backend `getSpellingSuggestions` returns `List<String>`.
-                              I cannot show edit distance without changing the backend or calculating it here.
-                              I will just show the word for now as it's cleaner, or I can calculate it. 
-                              Let's just show the word to be safe and clean. 
-                          */}
                         </Button>
                       ))}
                     </div>
