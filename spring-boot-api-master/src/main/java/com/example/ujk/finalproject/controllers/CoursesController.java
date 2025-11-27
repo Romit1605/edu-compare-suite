@@ -1,4 +1,4 @@
-package com.example.ujk.finalproject.controllers;
+package main.java.com.example.ujk.finalproject.controllers;
 
 import com.example.ujk.finalproject.model.FrequencyCountResponse;
 import com.example.ujk.finalproject.model.Course;
