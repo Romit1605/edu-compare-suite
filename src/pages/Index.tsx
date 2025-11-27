@@ -16,10 +16,10 @@ const Index = () => {
 
   const platforms = [
     { name: "Coursera", logo: "🎓", color: "bg-blue-500" },
-    { name: "Udemy", logo: "🎯", color: "bg-purple-500" },
+    { name: "Udacity", logo: "🎯", color: "bg-purple-500" },
     { name: "Harvard", logo: "🏛️", color: "bg-red-500" },
     { name: "Khan Academy", logo: "📚", color: "bg-green-500" },
-    { name: "Class Central", logo: "🌐", color: "bg-orange-500" },
+    { name: "Codecademy", logo: "🌐", color: "bg-orange-500" },
   ];
 
   const trendingSearches = [

@@ -48,7 +48,7 @@ const PatternFinder = () => {
           {
             courseId: "1",
             title: "Complete Python Programming Course",
-            platform: "Udemy",
+            platform: "Udacity",
             matches: ["support@example.com", "info@pythoncourse.com"],
           },
           {
@@ -68,7 +68,7 @@ const PatternFinder = () => {
         {
           courseId: "1",
           title: "Complete Python Programming Course",
-          platform: "Udemy",
+          platform: "Udacity",
           matches: ["support@example.com", "info@pythoncourse.com"],
         },
         {

@@ -45,15 +45,15 @@ const WordAnalyzer = () => {
         } else {
           // Fallback to mock suggestions when backend does not return OK
           setCourses([
-            { id: "1", title: "Complete Python Bootcamp", platform: "Udemy" },
+            { id: "1", title: "Complete Python Bootcamp", platform: "Udacity" },
             { id: "2", title: "Machine Learning A-Z", platform: "Coursera" },
           ]);
         }
       } catch (error) {
         setCourses([
-          { id: "1", title: "Complete Python Bootcamp", platform: "Udemy" },
-          { id: "2", title: "Machine Learning A-Z", platform: "Coursera" },
-        ]);
+            { id: "1", title: "Complete Python Bootcamp", platform: "Udacity" },
+            { id: "2", title: "Machine Learning A-Z", platform: "Coursera" },
+          ]);
       }
     }
   };

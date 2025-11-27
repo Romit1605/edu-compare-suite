@@ -2,7 +2,6 @@ com\example\ujk\finalproject\exceptions\AutoCompleteExceptionHandler.class
 com\example\ujk\finalproject\model\SearchResponse.class
 com\example\ujk\finalproject\exceptions\SearchExceptionHandler.class
 com\example\ujk\finalproject\model\Course.class
-com\example\ujk\finalproject\controllers\CoursesController.class
 com\example\ujk\finalproject\model\FrequencyCountRequest.class
 com\example\ujk\finalproject\services\FrequencyCountService.class
 com\example\ujk\finalproject\FinalprojectApplication.class
@@ -15,6 +14,7 @@ com\example\ujk\finalproject\model\SpellCheckRequest.class
 com\example\ujk\finalproject\services\SpellCheckService.class
 com\example\ujk\finalproject\model\SearchRequest.class
 com\example\ujk\finalproject\model\FrequencyCountResponse.class
+main\java\com\example\ujk\finalproject\controllers\CoursesController.class
 com\example\ujk\finalproject\exceptions\SpellCheckExceptionHandler.class
 com\example\ujk\finalproject\model\AutoCompleteRequest.class
 com\example\ujk\finalproject\services\AutoCompleteService.class

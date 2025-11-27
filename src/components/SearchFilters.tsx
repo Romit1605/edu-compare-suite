@@ -17,7 +17,7 @@ interface SearchFiltersProps {
 }
 
 export const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) => {
-  const platforms = ["Coursera", "Udemy", "Harvard", "Khan Academy", "Class Central"];
+  const platforms = ["Coursera", "Udacity", "Harvard", "Khan Academy", "Codecademy"];
   const categories = [
     "Programming",
     "Data Science",

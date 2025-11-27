@@ -26,10 +26,10 @@ export const CourseCard = ({ course, onClick }: CourseCardProps) => {
 
   const platformColors: Record<string, string> = {
     Coursera: "bg-blue-500",
-    Udemy: "bg-purple-500",
+    Udacity: "bg-purple-500",
     Harvard: "bg-red-500",
     "Khan Academy": "bg-green-500",
-    "Class Central": "bg-orange-500",
+    "Codecademy": "bg-orange-500",
   };
 
   const handleFavorite = (e: React.MouseEvent) => {

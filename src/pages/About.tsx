@@ -24,7 +24,7 @@ const About = () => {
       icon: Globe,
       title: "Web Crawler",
       description:
-        "Automatically crawls 5 education platforms (Coursera, Udemy, Harvard, Khan Academy, Class Central) to gather comprehensive course data.",
+        "Automatically crawls 5 education platforms (Coursera, Udacity, Harvard, Khan Academy, Codecademy) to gather comprehensive course data.",
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       link: "/",
