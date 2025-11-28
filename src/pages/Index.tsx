@@ -1,16 +1,28 @@
 import { useState } from "react";
 import { API_BASE_URL } from "@/config";
 import { useNavigate } from "react-router-dom";
-import { Search, TrendingUp, Users, BookOpen, Star, Sparkles } from "lucide-react";
+import {
+  Search,
+  TrendingUp,
+  Users,
+  BookOpen,
+  Star,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
+import axios from "axios";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { setQuery } from "@/reducers/searchSlice";
+
 
 const Index = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchWord = useAppSelector((state) => state.search.query);
+  const dispatch = useAppDispatch();
   const [autocompleteResults, setAutocompleteResults] = useState<string[]>([]);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
 
@@ -22,14 +34,7 @@ const Index = () => {
     { name: "Codecademy", logo: "🌐", color: "bg-orange-500" },
   ];
 
-  const trendingSearches = [
-    "Python Programming",
-    "Machine Learning",
-    "Web Development",
-    "Data Science",
-    "JavaScript",
-    "AI Fundamentals",
-  ];
+  const trendingSearches = ["Python", "ML", "React", "Data", "Web", "AI"];
 
   const stats = [
     { label: "Courses", value: "10,000+", icon: BookOpen },
@@ -38,37 +43,39 @@ const Index = () => {
     { label: "Categories", value: "50+", icon: Sparkles },
   ];
 
-  const handleSearch = (query: string = searchQuery) => {
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query)}`);
-    }
+  const handleSearch = () => {
+    navigate("/search");
   };
+
+  const setSearchQuery = (value: string) => {
+    dispatch(setQuery(value));
+  }
 
   const handleInputChange = async (value: string) => {
     setSearchQuery(value);
     if (value.length > 2) {
       // Simulate autocomplete API call
       try {
-        const response = await fetch(`${API_BASE_URL}/autocomplete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ word: value }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setAutocompleteResults(data.completions || []);
-          setShowAutocomplete(true);
-        }
+        const respone = await axios.post(
+          "http://localhost:8080/api/autocomplete",
+          {
+            word: value,
+          }
+        );
+        console.log("Response", respone);
+        const data = respone.data;
+        setAutocompleteResults(data.completions);
+        setShowAutocomplete(true);
       } catch (error) {
         console.error("Autocomplete API error:", error);
         // Fallback mock data
-        setAutocompleteResults([
-          `${value} basics`,
-          `${value} advanced`,
-          `${value} tutorial`,
-        ]);
-        setShowAutocomplete(true);
+        // setAutocompleteResults([
+        //   `${value} basics`,
+        //   `${value} advanced`,
+        //   `${value} tutorial`,
+        // ]);
+        // setShowAutocomplete(true);
+        setShowAutocomplete(false);
       }
     } else {
       setShowAutocomplete(false);
@@ -80,7 +87,10 @@ const Index = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-hero py-20 md:py-32">
+      <section
+        className="relative overflow-hidden bg-gradient-hero py-20 md:py-32"
+        style={{ height: 800 }}
+      >
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
@@ -97,11 +107,15 @@ const Index = () => {
                 <Input
                   type="text"
                   placeholder="Search for courses... (e.g., Python, Data Science)"
-                  value={searchQuery}
+                  value={searchWord}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  onFocus={() => searchQuery.length > 2 && setShowAutocomplete(true)}
-                  onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                  onFocus={() =>
+                    searchWord.length > 2 && setShowAutocomplete(true)
+                  }
+                  onBlur={() =>
+                    setTimeout(() => setShowAutocomplete(false), 200)
+                  }
                   className="h-14 pl-12 pr-4 text-lg rounded-xl shadow-lg border-2 border-white/20"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -118,19 +132,20 @@ const Index = () => {
               {showAutocomplete && autocompleteResults.length > 0 && (
                 <Card className="absolute top-full mt-2 w-full bg-card shadow-lg z-50 animate-slide-up">
                   <div className="p-2">
-                    {autocompleteResults.slice(0, 5).map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setSearchQuery(suggestion);
-                          handleSearch(suggestion);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-muted rounded-md transition-colors"
-                      >
-                        <Search className="w-4 h-4 inline mr-2 text-muted-foreground" />
-                        {suggestion}
-                      </button>
-                    ))}
+                    {autocompleteResults
+                      .slice(0, 5)
+                      .map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setSearchQuery(suggestion);
+                            handleSearch();
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-muted rounded-md transition-colors"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
                   </div>
                 </Card>
               )}
@@ -150,8 +165,12 @@ const Index = () => {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <stat.icon className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-3xl font-bold text-foreground mb-1">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {stat.label}
+                </div>
               </Card>
             ))}
           </div>
@@ -161,7 +180,9 @@ const Index = () => {
       {/* Platform Badges */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-10">Search Across Top Platforms</h2>
+          <h2 className="text-3xl font-bold text-center mb-10">
+            Search Across Top Platforms
+          </h2>
           <div className="flex flex-wrap justify-center gap-4">
             {platforms.map((platform, index) => (
               <Badge
@@ -188,7 +209,7 @@ const Index = () => {
             {trendingSearches.map((search, index) => (
               <button
                 key={index}
-                onClick={() => handleSearch(search)}
+                onClick={() => handleSearch()}
                 className="px-6 py-2 bg-card hover:bg-primary hover:text-primary-foreground rounded-full transition-colors shadow-sm border border-border"
               >
                 {search}

@@ -1,0 +1,40 @@
+export type CourseType = {
+  id: string;
+  courseName: string;
+  category: string;
+  subjects: string;
+  certifications: string;
+  pricingType: string;
+  priceDetails: string;
+  courseFormat: string;
+  specialFeatures: string;
+  rating: string;
+  reviewCount: string;
+  reviewSummary: string;
+  sourceWebsite: string;
+  courseURL: string;
+  duration: string;
+  difficultyLevel: string;
+  language: string;
+  subtitlesAvailable: string;
+  prerequisites: string;
+  instructor: string;
+  instructorBio: string;
+  institution: string;
+  institutionRating: string;
+  enrollmentCount: string;
+  completionRate: string;
+  startDate: string;
+  endDate: string;
+  weeklyStudyHours: string;
+  numberOfLectures: string;
+  numberOfAssignments: string;
+  numberOfQuizzes: string;
+  skillsGained: string;
+  careerOutcomes: string;
+  partnerCompanies: string;
+  accreditation: string;
+  rankScore: number;
+};
+
+

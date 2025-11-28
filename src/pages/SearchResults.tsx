@@ -8,96 +8,97 @@ import { SearchFilters } from "@/components/SearchFilters";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, AlertCircle } from "lucide-react";
+import axios from "axios";
+import { CourseType } from "@/Types";
+import { get } from "http";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { setQuery } from "@/reducers/searchSlice";
 
-interface Course {
-  id: string;
-  title: string;
-  platform: string;
-  category: string;
-  instructor: string;
-  rating: number;
-  price: string | number;
-  image?: string;
-  url?: string;
-}
+export type SearchResponse = {
+  courses_found: CourseType[];
+  statusCode: number;
+  message: string;
+};
 
-interface RankedCourse {
-  courseId: string;
-  title: string;
-  platform: string;
-  rankScore: number;
-  occurrences: number;
-  rank: number;
+interface SpellCheckResponse {
+  correctedWord: string;
+  speltCorrectly: boolean;
+  statusCode: number;
+  message: string;
 }
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const query = searchParams.get("q") || "";
+  // const query = searchParams.get("q") || "";
+  const [allCourses, setAllCourses] = useState<CourseType[]>([]);
 
-  const [searchQuery, setSearchQuery] = useState(query);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [rankedCourses, setRankedCourses] = useState<RankedCourse[]>([]);
+  const [showCorrectionAlert, setShowCorrectionAlert] = useState(false);
+  const [correctionSuggestion, setCorrectionSuggestion] = useState("");
+  // const [searchQuery, setSearchQuery] = useState(query);
+  const [courses, setCourses] = useState<CourseType[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    platforms: [] as string[],
-    category: "all",
-    price: "all",
-    rating: "all",
-  });
+
+  const searchWord = useAppSelector((state) => state.search.query);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (query) {
-      fetchResults(query);
+    if (searchWord.length) {
+      fetchResults(searchWord);
+    } else {
+      getAllCourses();
     }
-  }, [query]);
+  }, [searchWord]);
+
+  useEffect(() => {
+    console.log(allCourses.length);
+    // console.log(query.length);
+    console.log(courses.length);
+    console.log("search query", searchWord);
+    if (searchWord.length === 0) {
+    }
+  });
 
   const fetchResults = async (searchQuery: string) => {
     setLoading(true);
     try {
-      // 1. Search API (POST)
-      const searchResponse = await fetch(`${API_BASE_URL}/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ search: searchQuery }),
-      });
+      // Spell check first
+      // search for course
+      // update frequency
 
-      if (searchResponse.ok) {
-        const searchData = await searchResponse.json();
-        // Map backend Course to frontend Course interface
-        const mappedCourses = (searchData.courses_found || []).map((c: any, index: number) => ({
-          id: index.toString(),
-          title: c.title,
-          platform: c.university || c.type || "Unknown",
-          category: c.category || "General",
-          instructor: c.university || "Unknown",
-          rating: 4.5,
-          price: "Free",
-          image: c.imageUrl,
-          url: c.url
-        }));
-        setCourses(mappedCourses);
-      }
-
-      // 2. Spell Check API (POST)
-      const spellCheckResponse = await fetch(`${API_BASE_URL}/spellcheck`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word: searchQuery }),
-      });
-
-      if (spellCheckResponse.ok) {
-        const spellData = await spellCheckResponse.json();
-        if (!spellData.speltCorrectly && spellData.correctedWord) {
-          setSuggestions([spellData.correctedWord]);
-        } else {
-          setSuggestions([]);
+      const spellCheckRes: { data: SpellCheckResponse } = await axios.post(
+        "http://localhost:8080/api/spellcheck",
+        {
+          word: searchQuery,
         }
+      );
+
+      console.log(spellCheckRes);
+      if (!spellCheckRes.data.speltCorrectly) {
+        setShowCorrectionAlert(true);
+        setCorrectionSuggestion(spellCheckRes.data.correctedWord);
+        setSuggestions([spellCheckRes.data.correctedWord]);
+      } else {
+        setShowCorrectionAlert(false);
+        setCorrectionSuggestion("");
+        setSuggestions([]);
+
+        //call search and frequency update only if spelling is correct
+        const searchRes = await axios.post("http://localhost:8080/api/search", {
+          search: searchQuery,
+        });
+        console.log("search res", searchRes);
+        setCourses(searchRes.data.courses_found);
+
+        const frequencyRes = await axios.post(
+          "http://localhost:8080/api/freq",
+          {
+            word: searchQuery,
+          }
+        );
+        console.log("frequency res", frequencyRes);
       }
-
-      setRankedCourses([]);
-
     } catch (error) {
       console.error("Error fetching results:", error);
       setCourses([]);
@@ -107,37 +108,54 @@ const SearchResults = () => {
   };
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    if (searchWord.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchWord)}`);
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    setSearchQuery(suggestion);
+    dispatch(setQuery(suggestion));
     navigate(`/search?q=${encodeURIComponent(suggestion)}`);
   };
 
-  const filteredCourses = courses.filter((course) => {
-    if (filters.platforms.length > 0 && !filters.platforms.includes(course.platform)) {
-      return false;
+  // const filteredCourses = courses.filter((course) => {
+  //   if (
+  //     filters.platforms.length > 0 &&
+  //     !filters.platforms.includes(course.platform)
+  //   ) {
+  //     return false;
+  //   }
+  //   if (
+  //     filters.category &&
+  //     filters.category !== "all" &&
+  //     course.category !== filters.category
+  //   ) {
+  //     return false;
+  //   }
+  //   if (filters.price === "free" && course.price !== "FREE") {
+  //     return false;
+  //   }
+  //   if (filters.price === "paid" && course.price === "FREE") {
+  //     return false;
+  //   }
+  //   if (filters.rating === "4+" && course.rating < 4) {
+  //     return false;
+  //   }
+  //   if (filters.rating === "3+" && course.rating < 3) {
+  //     return false;
+  //   }
+  //   return true;
+  // });
+
+  const getAllCourses = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/courses");
+      console.log("courses:", res);
+      setAllCourses(res.data.courses);
+    } catch (error) {
+      console.error("Error fetching all courses:", error);
     }
-    if (filters.category && filters.category !== "all" && course.category !== filters.category) {
-      return false;
-    }
-    if (filters.price === "free" && course.price !== "FREE") {
-      return false;
-    }
-    if (filters.price === "paid" && course.price === "FREE") {
-      return false;
-    }
-    if (filters.rating === "4+" && course.rating < 4) {
-      return false;
-    }
-    if (filters.rating === "3+" && course.rating < 3) {
-      return false;
-    }
-    return true;
-  });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,8 +168,8 @@ const SearchResults = () => {
             <Input
               type="text"
               placeholder="Search for courses..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchWord}
+              onChange={(e) => dispatch(setQuery(e.target.value))}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="h-12"
             />
@@ -161,21 +179,18 @@ const SearchResults = () => {
           </div>
         </div>
 
-        {/* Ranked Results */}
-        {rankedCourses.length > 0 && (
-          <RankedResults keyword={query} courses={rankedCourses} />
-        )}
-
         <div className="flex flex-col md:flex-row gap-8 mt-8">
           {/* Filters Sidebar */}
-          <SearchFilters filters={filters} onFiltersChange={setFilters} />
+          {/* <SearchFilters filters={filters} onFiltersChange={setFilters} /> */}
 
           {/* Main Content */}
           <div className="flex-1">
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                <p className="mt-4 text-muted-foreground">Searching courses...</p>
+                <p className="mt-4 text-muted-foreground">
+                  Searching courses...
+                </p>
               </div>
             ) : (
               <>
@@ -201,27 +216,40 @@ const SearchResults = () => {
                   </div>
                 )}
 
-                {filteredCourses.length > 0 ? (
+                {courses.length > 0 ? (
                   <>
                     <h2 className="text-2xl font-bold mb-6">
-                      {filteredCourses.length} results found for "{query}"
+                      {courses.length} results found for "{searchWord}"
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {filteredCourses.map((course) => (
-                        <CourseCard key={course.id} course={course} />
+                      {courses.map((course) => (
+                        <CourseCard
+                          key={course.id}
+                          course={course}
+                          onClick={() => {
+                            window.open(course.courseURL, "_blank");
+                          }}
+                        />
                       ))}
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-12">
-                    <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-2xl font-semibold mb-4">
-                      No courses found for "{query}"
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Try checking your spelling or using different keywords.
-                    </p>
-                  </div>
+                  allCourses.length > 0 &&
+                  searchWord.length === 0 && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {allCourses.map((course) => (
+                          <CourseCard
+                            key={course.id}
+                            course={course}
+                            onClick={() => {
+                              window.open(course.courseURL, "_blank");
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )
                 )}
               </>
             )}
