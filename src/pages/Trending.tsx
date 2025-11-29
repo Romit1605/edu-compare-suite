@@ -6,16 +6,28 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, Search, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
+import axios from "axios";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { setQuery } from "@/reducers/searchSlice";
 
-interface TrendingSearch {
+export interface FrequencyResponse {
+  statusCode: number;
+  message: string;
+  frequencyMap: Array<Record<string, number>>;
+}
+
+interface TrendingItem {
   keyword: string;
-  searchCount: number;
-  lastSearched: string;
+  count: number;
 }
 
 const Trending = () => {
   const navigate = useNavigate();
-  const [trendingSearches, setTrendingSearches] = useState<TrendingSearch[]>([]);
+   const searchWord = useAppSelector((state) => state.search.query);
+  const dispatch = useAppDispatch();
+  const [trendingSearches, setTrendingSearches] = useState<
+    TrendingItem[]
+  >([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,45 +37,31 @@ const Trending = () => {
   const fetchTrendingSearches = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/courses/search-frequency`);
-      if (response.ok) {
-        const data = await response.json();
-        setTrendingSearches(data.trendingSearches || []);
-      } else {
-        // Backend does not expose this endpoint currently; use mock fallback
-        setTrendingSearches([
-          { keyword: "Python Programming", searchCount: 1250, lastSearched: "2 hours ago" },
-          { keyword: "Machine Learning", searchCount: 980, lastSearched: "3 hours ago" },
-          { keyword: "Web Development", searchCount: 845, lastSearched: "5 hours ago" },
-          { keyword: "Data Science", searchCount: 720, lastSearched: "1 hour ago" },
-          { keyword: "JavaScript", searchCount: 690, lastSearched: "4 hours ago" },
-          { keyword: "React", searchCount: 580, lastSearched: "6 hours ago" },
-          { keyword: "AI Fundamentals", searchCount: 540, lastSearched: "7 hours ago" },
-          { keyword: "Cloud Computing", searchCount: 480, lastSearched: "8 hours ago" },
-        ]);
-      }
+      const res = await axios.get<FrequencyResponse>(
+        "http://localhost:8080/api/all-freq"
+      );
+      console.log("total freq res", res);
+      const formatted = res.data.frequencyMap.flatMap((item) =>
+      Object.entries(item).map(([keyword, count]) => ({
+        keyword,
+        count,
+      }))
+    );
+      setTrendingSearches(formatted);
     } catch (error) {
       // Mock data fallback
-      setTrendingSearches([
-        { keyword: "Python Programming", searchCount: 1250, lastSearched: "2 hours ago" },
-        { keyword: "Machine Learning", searchCount: 980, lastSearched: "3 hours ago" },
-        { keyword: "Web Development", searchCount: 845, lastSearched: "5 hours ago" },
-        { keyword: "Data Science", searchCount: 720, lastSearched: "1 hour ago" },
-        { keyword: "JavaScript", searchCount: 690, lastSearched: "4 hours ago" },
-        { keyword: "React", searchCount: 580, lastSearched: "6 hours ago" },
-        { keyword: "AI Fundamentals", searchCount: 540, lastSearched: "7 hours ago" },
-        { keyword: "Cloud Computing", searchCount: 480, lastSearched: "8 hours ago" },
-      ]);
+      console.error("Total Frequency api failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSearchClick = (keyword: string) => {
-    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+    dispatch(setQuery(keyword));
+    navigate("/search");
   };
 
-  const maxCount = Math.max(...trendingSearches.map((s) => s.searchCount));
+  const maxCount = Math.max(...trendingSearches.map((s) => s.count), 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,27 +74,35 @@ const Trending = () => {
               <TrendingUp className="w-10 h-10 text-primary" />
               <div>
                 <h1 className="text-4xl font-bold">Trending Searches</h1>
-                <p className="text-muted-foreground">Most popular searches right now</p>
+                <p className="text-muted-foreground">
+                  Most popular searches right now
+                </p>
               </div>
             </div>
-            <Button onClick={fetchTrendingSearches} disabled={loading} variant="outline">
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+            <Button
+              onClick={fetchTrendingSearches}
+              disabled={loading}
+              variant="outline"
+            >
+              <RefreshCw
+                className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {trendingSearches.slice(0, 6).map((search, index) => (
+            {trendingSearches.slice(0, 6).map((item, index) => (
               <Card
                 key={index}
                 className="p-6 hover:shadow-lg transition-all cursor-pointer group animate-fade-in"
-                onClick={() => handleSearchClick(search.keyword)}
+                onClick={() => handleSearchClick(item.keyword)}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
-                    {search.keyword}
+                    {item.keyword}
                   </h3>
                   <Search className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
@@ -104,17 +110,21 @@ const Trending = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold">{search.searchCount}</span>
-                    <span className="text-sm text-muted-foreground">searches</span>
+                    <span className="text-2xl font-bold">
+                      {item.count}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      searches
+                    </span>
                   </div>
 
                   <Progress
-                    value={(search.searchCount / maxCount) * 100}
+                    value={(item.count / maxCount) * 100}
                     className="h-2"
                   />
 
                   <p className="text-sm text-muted-foreground">
-                    Last searched: {search.lastSearched}
+                    Last searched: {searchWord}
                   </p>
                 </div>
               </Card>
@@ -125,31 +135,24 @@ const Trending = () => {
           <Card className="p-8">
             <h2 className="text-2xl font-bold mb-6">Top 20 Keywords</h2>
             <div className="space-y-4">
-              {trendingSearches.slice(0, 20).map((search, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 hover:bg-muted/50 p-2 rounded-lg transition-colors cursor-pointer"
-                  onClick={() => handleSearchClick(search.keyword)}
-                >
-                  <div className="w-32 text-sm font-medium truncate">
-                    {search.keyword}
-                  </div>
-                  <div className="flex-1">
-                    <div className="relative h-8 bg-muted rounded-lg overflow-hidden">
+              {
+                trendingSearches.slice(0, 20).map((item, index) => (
+                  <div key={index} className="flex items-center gap-4">
+                    <span className="w-32 text-sm">{item.keyword}</span>
+                    <div className="flex-1 bg-muted h-4 rounded overflow-hidden">
                       <div
-                        className="absolute inset-y-0 left-0 bg-gradient-primary flex items-center justify-end pr-3 transition-all duration-500"
+                        className="bg-primary h-4 rounded"
                         style={{
-                          width: `${(search.searchCount / maxCount) * 100}%`,
+                          width: `${(item.count / maxCount) * 100}%`,
                         }}
-                      >
-                        <span className="text-sm font-bold text-white">
-                          {search.searchCount}
-                        </span>
-                      </div>
+                      ></div>
                     </div>
+                    <span className="w-12 text-sm text-right">
+                      {item.count}
+                    </span>
                   </div>
-                </div>
-              ))}
+                ))
+              }
             </div>
           </Card>
         </div>
