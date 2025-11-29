@@ -46,14 +46,13 @@ const SearchResults = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    console.log("searchWord",searchWord)
+    console.log("searchWord", searchWord);
     if (searchWord.length > 0) {
       fetchResults(searchWord);
     } else {
       getAllCourses();
     }
   }, [searchWord]);
-
 
   const fetchResults = async (searchQuery: string) => {
     setLoading(true);
@@ -227,7 +226,7 @@ const SearchResults = () => {
                   </div>
                 )}
 
-                {courses.length > 0  && searchWord.length ? (
+                {courses.length > 0 && searchWord.length ? (
                   <>
                     <h2 className="text-2xl font-bold mb-6">
                       {courses.length} results found for "{searchWord}"
@@ -267,16 +266,18 @@ const SearchResults = () => {
           </div>
         </div>
 
-        <div className="flex flex-row flex-end gap-5 mt-8">
-          {currpageRes > 1 && (
+        {searchWord.length == 0 && (
+          <div className="flex flex-row flex-end gap-5 mt-8">
+            {currpageRes > 1 && (
+              <div>
+                <Button onClick={handlePrevPageClick}>Prev</Button>
+              </div>
+            )}
             <div>
-              <Button onClick={handlePrevPageClick}>Prev</Button>
+              <Button onClick={handleNextPageClick}>Next</Button>
             </div>
-          )}
-          <div>
-            <Button onClick={handleNextPageClick}>Next</Button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
