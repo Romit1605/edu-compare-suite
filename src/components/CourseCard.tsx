@@ -70,7 +70,7 @@ export const CourseCard = ({ course, onClick }: CourseCardProps) => {
         </div>
         <div className="text-sm text-muted-foreground mb-3 flex flex-row gap-2">
           <p>Institution: </p>
-          <p>{course.institution}</p>
+          <p style={{fontWeight: 600}}>{course.institution}</p>
         </div>
         <div className="text-sm text-muted-foreground mb-3 flex flex-row gap-2">
           <p>Institution Rating: </p>

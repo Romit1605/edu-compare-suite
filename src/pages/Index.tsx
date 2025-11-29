@@ -53,7 +53,7 @@ const Index = () => {
 
   const handleInputChange = async (value: string) => {
     setSearchQuery(value);
-    if (value.length > 2) {
+    if (value.length > 1) {
       // Simulate autocomplete API call
       try {
         const respone = await axios.post(

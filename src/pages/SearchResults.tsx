@@ -13,6 +13,7 @@ import { CourseType } from "@/Types";
 import { get } from "http";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { setQuery } from "@/reducers/searchSlice";
+import { set } from "date-fns";
 
 export type SearchResponse = {
   courses_found: CourseType[];
@@ -35,6 +36,7 @@ const SearchResults = () => {
 
   const [showCorrectionAlert, setShowCorrectionAlert] = useState(false);
   const [correctionSuggestion, setCorrectionSuggestion] = useState("");
+  const [currpageRes, setCurrpageRes] = useState<number>(1);
   // const [searchQuery, setSearchQuery] = useState(query);
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -44,21 +46,14 @@ const SearchResults = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (searchWord.length) {
+    console.log("searchWord",searchWord)
+    if (searchWord.length > 0) {
       fetchResults(searchWord);
     } else {
       getAllCourses();
     }
   }, [searchWord]);
 
-  useEffect(() => {
-    console.log(allCourses.length);
-    // console.log(query.length);
-    console.log(courses.length);
-    console.log("search query", searchWord);
-    if (searchWord.length === 0) {
-    }
-  });
 
   const fetchResults = async (searchQuery: string) => {
     setLoading(true);
@@ -118,6 +113,20 @@ const SearchResults = () => {
     navigate(`/search?q=${encodeURIComponent(suggestion)}`);
   };
 
+  const handleNextPageClick = () => {
+    // Implement pagination logic here
+    console.log("Next page clicked");
+    setCurrpageRes(currpageRes + 1);
+    getAllCourses(currpageRes + 1);
+  };
+
+  const handlePrevPageClick = () => {
+    // Implement pagination logic here
+    console.log("Prev page clicked");
+    setCurrpageRes(currpageRes - 1);
+    getAllCourses(currpageRes - 1);
+  };
+
   // const filteredCourses = courses.filter((course) => {
   //   if (
   //     filters.platforms.length > 0 &&
@@ -147,9 +156,11 @@ const SearchResults = () => {
   //   return true;
   // });
 
-  const getAllCourses = async () => {
+  const getAllCourses = async (pageNumber = 1) => {
     try {
-      const res = await axios.get("http://localhost:8080/api/courses");
+      const res = await axios.get("http://localhost:8080/api/courses", {
+        params: { page: pageNumber },
+      });
       console.log("courses:", res);
       setAllCourses(res.data.courses);
     } catch (error) {
@@ -216,7 +227,7 @@ const SearchResults = () => {
                   </div>
                 )}
 
-                {courses.length > 0 ? (
+                {courses.length > 0  && searchWord.length ? (
                   <>
                     <h2 className="text-2xl font-bold mb-6">
                       {courses.length} results found for "{searchWord}"
@@ -253,6 +264,17 @@ const SearchResults = () => {
                 )}
               </>
             )}
+          </div>
+        </div>
+
+        <div className="flex flex-row flex-end gap-5 mt-8">
+          {currpageRes > 1 && (
+            <div>
+              <Button onClick={handlePrevPageClick}>Prev</Button>
+            </div>
+          )}
+          <div>
+            <Button onClick={handleNextPageClick}>Next</Button>
           </div>
         </div>
       </div>
