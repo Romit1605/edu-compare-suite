@@ -27,7 +27,6 @@ const About = () => {
         "Automatically crawls 5 education platforms (Coursera, Udacity, Harvard, Khan Academy, Codecademy) to gather comprehensive course data.",
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
-      link: "/",
     },
     {
       id: 2,
@@ -37,7 +36,6 @@ const About = () => {
         "Extracts structured data from web pages, converting raw HTML into organized course information with titles, descriptions, and metadata.",
       color: "text-green-500",
       bgColor: "bg-green-500/10",
-      link: "/",
     },
     {
       id: 3,
@@ -47,7 +45,6 @@ const About = () => {
         "Suggests corrections for typos using advanced algorithms. Get intelligent suggestions when no courses match your search.",
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-      link: "/search",
     },
     {
       id: 4,
@@ -57,7 +54,6 @@ const About = () => {
         "Auto-suggests course titles and keywords as you type, making search faster and more intuitive with predictive text completion.",
       color: "text-yellow-500",
       bgColor: "bg-yellow-500/10",
-      link: "/",
     },
     {
       id: 5,
@@ -67,7 +63,6 @@ const About = () => {
         "Analyze word occurrences in courses. Find out how many times specific keywords appear in course descriptions and content.",
       color: "text-pink-500",
       bgColor: "bg-pink-500/10",
-      link: "/analyzer",
     },
     {
       id: 6,
@@ -77,7 +72,6 @@ const About = () => {
         "Track trending searches and popular keywords. Visualize what users are searching for most with dynamic charts and statistics.",
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
-      link: "/trending",
     },
     {
       id: 7,
@@ -87,7 +81,6 @@ const About = () => {
         "Smart relevance scoring algorithm that ranks courses based on keyword matches, occurrences, and content quality for better results.",
       color: "text-red-500",
       bgColor: "bg-red-500/10",
-      link: "/search",
     },
     {
       id: 8,
@@ -97,7 +90,6 @@ const About = () => {
         "Lightning-fast search powered by inverted index data structure. Find courses instantly across thousands of records.",
       color: "text-cyan-500",
       bgColor: "bg-cyan-500/10",
-      link: "/search",
     },
     {
       id: 9,
@@ -107,7 +99,6 @@ const About = () => {
         "Quality checks using regular expressions. Validates URLs, emails, and prices to ensure data integrity across the platform.",
       color: "text-teal-500",
       bgColor: "bg-teal-500/10",
-      link: "/validation",
     },
     {
       id: 10,
@@ -117,7 +108,7 @@ const About = () => {
         "Find emails, URLs, and other patterns in course data using regex. Powerful pattern matching for data analysis and extraction.",
       color: "text-indigo-500",
       bgColor: "bg-indigo-500/10",
-      link: "/patterns",
+
     },
   ];
 
@@ -145,7 +136,6 @@ const About = () => {
                 key={feature.id}
                 className="p-6 hover:shadow-lg transition-all duration-300 group cursor-pointer animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
-                onClick={() => navigate(feature.link)}
               >
                 <div className={`w-14 h-14 ${feature.bgColor} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   <feature.icon className={`w-7 h-7 ${feature.color}`} />
@@ -164,14 +154,6 @@ const About = () => {
                     </p>
                   </div>
                 </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground"
-                >
-                  Try it →
-                </Button>
               </Card>
             ))}
           </div>

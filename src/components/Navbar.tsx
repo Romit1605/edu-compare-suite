@@ -38,41 +38,6 @@ export const Navbar = () => {
         <TrendingUp className="w-4 h-4" />
         Trending
       </NavLink>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-1">
-            <Wrench className="w-4 h-4" />
-            Tools
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-popover z-50">
-          <DropdownMenuItem asChild>
-            <NavLink to="/analyzer" className="cursor-pointer">
-              Word Analyzer
-            </NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <NavLink to="/patterns" className="cursor-pointer">
-              Pattern Finder
-            </NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <NavLink to="/validation" className="cursor-pointer">
-              Data Validation
-            </NavLink>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <NavLink
-        to="/favorites"
-        className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md flex items-center gap-1"
-        activeClassName="text-primary font-semibold"
-      >
-        <Heart className="w-4 h-4" />
-        Favorites
-      </NavLink>
       <NavLink
         to="/about"
         className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md flex items-center gap-1"
