@@ -127,9 +127,9 @@ const Index = () => {
               >
                 Search Courses
               </Button>
-
-              {/* Autocomplete Dropdown */}
-              {showAutocomplete && autocompleteResults.length > 0 && (
+            </div>
+          </div>
+          {showAutocomplete && autocompleteResults.length > 0 && (
                 <Card className="absolute top-full mt-2 w-full bg-card shadow-lg z-50 animate-slide-up">
                   <div className="p-2">
                     {autocompleteResults
@@ -149,8 +149,6 @@ const Index = () => {
                   </div>
                 </Card>
               )}
-            </div>
-          </div>
         </div>
       </section>
 
