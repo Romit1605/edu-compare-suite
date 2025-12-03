@@ -25,9 +25,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/trending" element={<Trending />} />
-          <Route path="/analyzer" element={<WordAnalyzer />} />
+          {/* <Route path="/analyzer" element={<WordAnalyzer />} />
           <Route path="/patterns" element={<PatternFinder />} />
-          <Route path="/validation" element={<DataValidation />} />
+          <Route path="/validation" element={<DataValidation />} /> */}
           <Route path="/about" element={<About />} />
           <Route path="/favorites" element={<Favorites />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -87,6 +87,7 @@ const Index = () => {
       <Navbar />
 
       {/* Hero Section */}
+      
       <section
         className="relative overflow-hidden bg-gradient-hero py-20 md:py-32"
         style={{ height: 800 }}
@@ -103,7 +104,7 @@ const Index = () => {
 
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto relative">
-              <div className="relative">
+              {/* <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search for courses... (e.g., Python, Data Science)"
@@ -119,7 +120,7 @@ const Index = () => {
                   className="h-14 pl-12 pr-4 text-lg rounded-xl shadow-lg border-2 border-white/20"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              </div>
+              </div> */}
               <Button
                 onClick={() => handleSearch()}
                 size="lg"

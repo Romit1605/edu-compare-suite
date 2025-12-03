@@ -79,16 +79,6 @@ const Trending = () => {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={fetchTrendingSearches}
-              disabled={loading}
-              variant="outline"
-            >
-              <RefreshCw
-                className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </Button>
           </div>
 
           {/* Cards Grid */}

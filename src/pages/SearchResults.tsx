@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { API_BASE_URL } from "@/config";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -14,6 +15,7 @@ import { get } from "http";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { setQuery } from "@/reducers/searchSlice";
 import { set } from "date-fns";
+import { Card } from "@/components/ui/card";
 
 export type SearchResponse = {
   courses_found: CourseType[];
@@ -35,56 +37,76 @@ const SearchResults = () => {
   const [allCourses, setAllCourses] = useState<CourseType[]>([]);
 
   const [showCorrectionAlert, setShowCorrectionAlert] = useState(false);
-  const [correctionSuggestion, setCorrectionSuggestion] = useState("");
   const [currpageRes, setCurrpageRes] = useState<number>(1);
-  // const [searchQuery, setSearchQuery] = useState(query);
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [autocompleteResults, setAutocompleteResults] = useState<string[]>([]);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [blockAutocomplete, setBlockAutocomplete] = useState(false);
 
   const searchWord = useAppSelector((state) => state.search.query);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    console.log("searchWord", searchWord);
-    if (searchWord.length > 0) {
-      fetchResults(searchWord);
-    } else {
-      getAllCourses();
+  const getAutoCompleteResults = async () => {
+    console.log("calling get autocomplete res.....");
+    try {
+      const respone = await axios.post(
+        "http://localhost:8080/api/autocomplete",
+        {
+          word: searchWord,
+        }
+      );
+      console.log("res", respone.data.completions);
+      setAutocompleteResults(respone.data.completions);
+    } catch (error) {
+      console.error("Error fetching autocomplete results:", error);
+    } finally {
+      setShowAutocomplete(true);
     }
-  }, [searchWord]);
+  };
+
+  useEffect(() => {
+    if (blockAutocomplete) return;
+    if (searchWord.length === 0) {
+      setShowAutocomplete(false);
+      getAllCourses();
+    } else if (searchWord.length >= 2) {
+      getAutoCompleteResults();
+    }
+  }, [searchWord, blockAutocomplete]);
+
+  const setSearchQuery = (value: string) => {
+    dispatch(setQuery(value));
+  };
 
   const fetchResults = async (searchQuery: string) => {
+    console.log("fetch results called");
     setLoading(true);
+    setShowAutocomplete(false);
+    setAutocompleteResults([]);
     try {
       // Spell check first
       // search for course
       // update frequency
-
       const spellCheckRes: { data: SpellCheckResponse } = await axios.post(
         "http://localhost:8080/api/spellcheck",
         {
           word: searchQuery,
         }
       );
-
-      console.log(spellCheckRes);
       if (!spellCheckRes.data.speltCorrectly) {
         setShowCorrectionAlert(true);
-        setCorrectionSuggestion(spellCheckRes.data.correctedWord);
         setSuggestions([spellCheckRes.data.correctedWord]);
       } else {
         setShowCorrectionAlert(false);
-        setCorrectionSuggestion("");
         setSuggestions([]);
 
         //call search and frequency update only if spelling is correct
         const searchRes = await axios.post("http://localhost:8080/api/search", {
           search: searchQuery,
         });
-        console.log("search res", searchRes);
         setCourses(searchRes.data.courses_found);
-
         const frequencyRes = await axios.post(
           "http://localhost:8080/api/freq",
           {
@@ -101,15 +123,17 @@ const SearchResults = () => {
     }
   };
 
-  const handleSearch = () => {
-    if (searchWord.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchWord)}`);
-    }
+  const handleSearch = (searchVal: string) => {
+    setShowAutocomplete(false);
+    setSearchQuery(searchVal);
+    setAutocompleteResults([]);
+    fetchResults(searchVal);
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    dispatch(setQuery(suggestion));
-    navigate(`/search?q=${encodeURIComponent(suggestion)}`);
+  const handleSuggestion = (suggestion: string) => {
+    setBlockAutocomplete(true);
+    setSearchQuery(suggestion);
+    fetchResults(suggestion);
   };
 
   const handleNextPageClick = () => {
@@ -126,39 +150,10 @@ const SearchResults = () => {
     getAllCourses(currpageRes - 1);
   };
 
-  // const filteredCourses = courses.filter((course) => {
-  //   if (
-  //     filters.platforms.length > 0 &&
-  //     !filters.platforms.includes(course.platform)
-  //   ) {
-  //     return false;
-  //   }
-  //   if (
-  //     filters.category &&
-  //     filters.category !== "all" &&
-  //     course.category !== filters.category
-  //   ) {
-  //     return false;
-  //   }
-  //   if (filters.price === "free" && course.price !== "FREE") {
-  //     return false;
-  //   }
-  //   if (filters.price === "paid" && course.price === "FREE") {
-  //     return false;
-  //   }
-  //   if (filters.rating === "4+" && course.rating < 4) {
-  //     return false;
-  //   }
-  //   if (filters.rating === "3+" && course.rating < 3) {
-  //     return false;
-  //   }
-  //   return true;
-  // });
-
   const getAllCourses = async (pageNumber = 1) => {
     try {
       const res = await axios.get("http://localhost:8080/api/courses", {
-        params: { page: pageNumber },
+        params: { page: pageNumber, size: 12 },
       });
       console.log("courses:", res);
       setAllCourses(res.data.courses);
@@ -170,7 +165,6 @@ const SearchResults = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-
       <div className="container mx-auto px-4 py-8">
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8">
@@ -179,20 +173,20 @@ const SearchResults = () => {
               type="text"
               placeholder="Search for courses..."
               value={searchWord}
-              onChange={(e) => dispatch(setQuery(e.target.value))}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onChange={(e) => {
+                setBlockAutocomplete(false);
+                setSearchQuery(e.target.value);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch(searchWord)}
               className="h-12"
             />
-            <Button onClick={handleSearch} size="lg">
+            <Button onClick={() => handleSearch(searchWord)} size="lg">
               <Search className="w-5 h-5" />
             </Button>
           </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8 mt-8">
-          {/* Filters Sidebar */}
-          {/* <SearchFilters filters={filters} onFiltersChange={setFilters} /> */}
-
           {/* Main Content */}
           <div className="flex-1">
             {loading ? (
@@ -204,7 +198,27 @@ const SearchResults = () => {
               </div>
             ) : (
               <>
-                {suggestions.length > 0 && (
+                {showAutocomplete && (
+                  <Card className="top-full mt-2 w-full bg-card shadow-lg z-50 animate-slide-up">
+                    <div className="p-2">
+                      {autocompleteResults.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            console.log("autoselct clicked");
+                            setBlockAutocomplete(true);
+                            // setShowAutocomplete(false);
+                            handleSearch(suggestion);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-muted rounded-md transition-colors"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+                {showCorrectionAlert && suggestions.length > 0 && (
                   <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
                     <p className="text-muted-foreground mb-2 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
@@ -216,7 +230,9 @@ const SearchResults = () => {
                           key={index}
                           variant="outline"
                           size="sm"
-                          onClick={() => handleSuggestionClick(suggestion)}
+                          onClick={() => {
+                            handleSuggestion(suggestion);
+                          }}
                           className="bg-background hover:bg-accent"
                         >
                           {suggestion}
@@ -226,7 +242,7 @@ const SearchResults = () => {
                   </div>
                 )}
 
-                {courses.length > 0 && searchWord.length ? (
+                {courses.length > 0 && searchWord.length > 0 && !showCorrectionAlert ? (
                   <>
                     <h2 className="text-2xl font-bold mb-6">
                       {courses.length} results found for "{searchWord}"
@@ -245,6 +261,8 @@ const SearchResults = () => {
                   </>
                 ) : (
                   allCourses.length > 0 &&
+                  !showAutocomplete &&
+                  !showCorrectionAlert &&
                   searchWord.length === 0 && (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
